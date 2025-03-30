@@ -101,7 +101,7 @@ const Login = () => {
 
       await fetchUser();
       console.log("Login successful, navigating to transactions page");
-      navigate("/transactions"); // Redirect to transactions page instead of homepage
+      navigate("/"); // Redirect to transactions page instead of homepage
     } catch (error) {
       console.error("An error occurred:", error);
       setError("An error occurred. Please try again.");
