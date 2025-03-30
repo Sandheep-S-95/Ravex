@@ -9,7 +9,6 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Header from "./components/Header";
 
 function App() {
   return (
@@ -21,17 +20,17 @@ function App() {
             <Route path="/coins/:id" element={<CoinPage />} />
             <Route path="/add-transaction" element={<AddTransaction />} />
             <Route path="/transactions" element={<Transactions />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
-            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </main>
-        <footer className="p-4 text-center bg-gray-100">
-          <p>© 2025 Crypto App. All rights reserved.</p>
-        </footer>
-      </div>
+        <footer className="p-4 text-center bg-gray-500 text-white">
+  <p>© 2025 Crypto App. All rights reserved.</p>
+</footer>
+ </div>
     </BrowserRouter>
   );
 }

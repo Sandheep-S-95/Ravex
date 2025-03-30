@@ -14,7 +14,7 @@ function Header() {
       <header className="bg-gray-900 text-white py-4">
         <div className="container mx-auto px-4 flex items-center justify-between">
           <h1 className="flex-1 text-xl font-bold text-yellow-400 font-montserrat">
-            Crypto Hunter
+            RAVEX
           </h1>
           <div>Loading...</div>
         </div>
@@ -34,7 +34,7 @@ function Header() {
           className="flex-1 text-xl font-bold text-yellow-400 font-montserrat cursor-pointer hover:text-yellow-500 transition-colors"
           onClick={() => navigate("/")}
         >
-          Crypto Hunter
+          RAVEX
         </h1>
         <div className="flex items-center gap-4">
           <select
