@@ -5,6 +5,7 @@ import { Line } from "react-chartjs-2";
 import SelectButton from "./SelectButton";
 import { chartDays } from "../config/data";
 import { CryptoState } from "../CryptoContext";
+import { motion } from "framer-motion";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -41,15 +42,24 @@ const CoinInfo = ({ coin }) => {
 
   useEffect(() => {
     fetchHistoricData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [days]);
 
-  console.log(coin);
-
   return (
-    <div className="w-3/4 flex flex-col items-center justify-center mt-6 p-10 bg-purple-900 text-white md:w-full md:mt-0 md:p-5 md:pt-0">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="p-6 rounded-2xl bg-gray-900/50 backdrop-blur-lg shadow-xl border border-teal-500/30 relative overflow-hidden"
+    >
+      {/* Glowing effects */}
+      <div className="absolute -top-20 left-10 w-72 h-72 bg-teal-500/20 rounded-full blur-3xl"></div>
+      <div className="absolute -bottom-20 right-10 w-72 h-72 bg-cyan-400/20 rounded-full blur-3xl"></div>
+
+      {/* Chart */}
       {!historicData || !flag ? (
-        <div className="w-64 h-64 border-4 border-t-purple-500 rounded-full animate-spin"></div>
+        <div className="flex justify-center items-center h-64">
+          <div className="w-10 h-10 border-4 border-teal-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
       ) : (
         <>
           <Line
@@ -66,35 +76,42 @@ const CoinInfo = ({ coin }) => {
                 {
                   data: historicData.map((coin) => coin[1]),
                   label: `Price (Past ${days} Days) in ${currency}`,
-                  borderColor: "#EEBC1D", // Gold color
+                  borderColor: "#2DD4BF", // Tailwind cyan-400
+                  backgroundColor: "rgba(45, 212, 191, 0.1)",
+                  borderWidth: 2,
                 },
               ],
             }}
             options={{
               elements: {
                 point: {
-                  radius: 1,
+                  radius: 2,
                 },
               },
             }}
           />
-          <div className="flex mt-5 justify-around w-full flex-wrap gap-4">
+
+          {/* Buttons */}
+          <div className="flex justify-center mt-6 space-x-3">
             {chartDays.map((day) => (
-              <SelectButton
+              <motion.button
                 key={day.value}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   setDays(day.value);
                   setFlag(false);
                 }}
-                selected={day.value === days}
+                className={`px-4 py-2 rounded-xl transition-all font-semibold text-sm 
+                  ${day.value === days ? "bg-teal-500 text-black" : "bg-gray-800 text-gray-300 hover:bg-teal-500/30"}`}
               >
                 {day.label}
-              </SelectButton>
+              </motion.button>
             ))}
           </div>
         </>
       )}
-    </div>
+    </motion.div>
   );
 };
 

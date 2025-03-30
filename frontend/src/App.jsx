@@ -9,28 +9,39 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { motion } from "framer-motion";
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen w-full">
-        <main className="flex-1">
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+        <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/coins/:id" element={<CoinPage />} />
             <Route path="/add-transaction" element={<AddTransaction />} />
-            <Route path="/transactions" element={<Transactions />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/update-password" element={<UpdatePassword />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/transactions" element={<Transactions />} />
           </Routes>
         </main>
-        <footer className="p-4 text-center bg-gray-500 text-white">
-  <p>© 2025 Crypto App. All rights reserved.</p>
-</footer>
- </div>
+        
+        <motion.footer 
+          className="w-full py-4 text-center bg-gray-900 text-gray-300"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="max-w-7xl mx-auto px-4">
+            <p className="font-medium text-lg text-gray-400">
+              RAVEX &copy; 2025 CODED WITH <span className="text-red-500">&lt;❤️/&gt;</span> AND <span className="text-yellow-500">&lt;☕/&gt;</span> BY Sandheep S & Hariish A
+            </p>
+          </div>
+        </motion.footer>
+      </div>
     </BrowserRouter>
   );
 }

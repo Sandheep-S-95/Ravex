@@ -39,7 +39,7 @@ const CarouselComponent = () => {
       <Link
         key={coin.id}
         to={`/coins/${coin.id}`}
-        className="flex flex-col items-center cursor-pointer text-gray-800 uppercase"
+        className="flex flex-col items-center cursor-pointer text-white-800 uppercase"
       >
         <img src={coin?.image} alt={coin.name} className="h-20 mb-2" />
         <span className="text-lg font-montserrat">

@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import ReactApexChart from "react-apexcharts";
 
-const API_KEY = "H74P9FW2LAIT8J5B"; // Your API key
+const API_KEY = "YWKNZCCT3TT4K4I3"; // Your API key
 
 const LiveChart = ({ symbol }) => {
   const [stockData, setStockData] = useState({});
