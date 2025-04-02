@@ -38,10 +38,9 @@ const LiveChart = ({ symbol }) => {
         }
       );
     }
-    // Sort by date and take the last 13 weeks (approx. 3 months) for zoom
-    return formattedData
-      .sort((a, b) => new Date(a.x) - new Date(b.x))
-      .slice(-13); // Adjust this number to zoom in/out (e.g., -5 for ~1 month)
+    // Move sort operation to a separate statement
+    const sortedData = formattedData.sort((a, b) => new Date(a.x) - new Date(b.x));
+    return sortedData.slice(-13); // Adjust this number to zoom in/out (e.g., -5 for ~1 month)
   };
 
   const candleStickOptions = {

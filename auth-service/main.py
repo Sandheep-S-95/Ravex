@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends, status, Header, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr, field_validator
-from typing import Optional
 import os
+import re
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import logging
@@ -16,6 +16,10 @@ load_dotenv()
 supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_KEY")
 
+if not supabase_url or not supabase_key:
+    logger.error("Missing required environment variables: SUPABASE_URL and/or SUPABASE_KEY")
+    raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set in the environment")
+
 # Initialize Supabase client
 supabase: Client = create_client(supabase_url, supabase_key)
 
@@ -23,12 +27,13 @@ supabase: Client = create_client(supabase_url, supabase_key)
 app = FastAPI(title="Stock Trading App - Authentication Service")
 
 # Configure CORS
+allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # Data models
@@ -41,6 +46,14 @@ class UserSignUp(BaseModel):
     def password_strength(cls, v):
         if len(v) < 8:
             raise ValueError('Password must be at least 8 characters long')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+        if not re.search(r'[0-9]', v):
+            raise ValueError('Password must contain at least one number')
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
+            raise ValueError('Password must contain at least one special character')
         return v
 
 class UserMetadata(BaseModel):
@@ -70,7 +83,7 @@ async def get_current_user(authorization: str = Header(...)):
         if not user_response.user:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
         return user_response.user
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
 # Routes
@@ -112,12 +125,14 @@ async def login(user: UserLogin):
             "refresh_token": auth_response.session.refresh_token,
             "token_type": "bearer"
         }
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
 @app.post("/auth/logout")
-async def logout(current_user=Depends(get_current_user)):
+async def logout(authorization: str = Header(...), current_user=Depends(get_current_user)):
     try:
+        token = authorization.split("Bearer ")[1] if "Bearer " in authorization else authorization
+        supabase.auth.set_session(token)
         supabase.auth.sign_out()
         return {"message": "Successfully logged out"}
     except Exception as e:
@@ -155,7 +170,7 @@ async def refresh_token(refresh_token: str = Form(...)):
             "refresh_token": auth_response.session.refresh_token,
             "token_type": "bearer"
         }
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 class UpdatePasswordRequest(BaseModel):
@@ -165,9 +180,9 @@ class UpdatePasswordRequest(BaseModel):
 @app.post("/auth/update-password")
 async def update_password(request: UpdatePasswordRequest):
     try:
+        supabase.auth.set_session(request.access_token)
         auth_response = supabase.auth.update_user(
-            {"password": request.password},
-            jwt=request.access_token
+            {"password": request.password}
         )
         if auth_response.user:
             return {"message": "Password updated successfully"}

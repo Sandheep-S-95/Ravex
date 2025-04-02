@@ -20,13 +20,16 @@ const InputField = ({ type, placeholder, icon, value, onChange, className }) => 
     }
   };
 
+  // Extracted nested ternary into a separate statement
+  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
+
   return (
     <div className="relative">
       <span className="absolute inset-y-0 left-0 flex items-center pl-4">
         {getIcon()}
       </span>
       <input
-        type={type === "password" ? (showPassword ? "text" : "password") : type}
+        type={inputType}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
