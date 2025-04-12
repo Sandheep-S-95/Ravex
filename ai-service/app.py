@@ -37,7 +37,7 @@ def analyze_stock():
         if not stock_symbol:
             logger.warning("No stock symbol provided in request")
             return jsonify({'error': 'Stock symbol is required'}), 400
-        prompt = f"AFTER ANALYSING THE LIVE STOCK GRAPH  OF '{stock_symbol}' , GIVE RESPONSE LIKE 'AFTER ANALYSING THE STOCK-GRAPH OF {stock_symbol}, THE STOCK PATTERNS I OBSERVE INCLUDE ... '"
+        prompt = f"AFTER ANALYSING THE LIVE STOCK GRAPH OF '{stock_symbol}', PROVIDE A RESPONSE IN 1-2 LINES LIKE 'AFTER ANALYSING THE STOCK-GRAPH OF {stock_symbol}, THE STOCK PATTERNS I OBSERVE INCLUDE ...' AND END WITH A MANDATORY STATEMENT: 'YOU CAN INVEST' OR 'NOT RECOMMENDED TO INVEST' BASED ON THE ANALYSIS."
         logger.debug(f"Generated prompt: {prompt}")
         logger.debug("Calling Mistral AI API...")
         response = client.chat.complete(

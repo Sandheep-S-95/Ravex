@@ -6,34 +6,32 @@ import InputField from "../../components/auth_components/InputField";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-// Create a Star component with Framer Motion
+// Star component with Framer Motion
 const Star = ({ delay, duration, top, width }) => {
   return (
     <motion.div
       className="absolute h-0.5 bg-gradient-to-r from-green-400 to-transparent rounded-full opacity-70"
-      style={{ 
+      style={{
         top: `${top}vh`,
         width: `${width}em`,
-        filter: "drop-shadow(0 0 2px #4ade80)"
+        filter: "drop-shadow(0 0 2px #4ade80)",
       }}
       initial={{ x: "100vw" }}
-      animate={{ 
-        x: "-30vw",
-      }}
+      animate={{ x: "-30vw" }}
       transition={{
         duration: duration,
         delay: delay,
         repeat: Infinity,
         repeatType: "loop",
-        ease: "linear"
+        ease: "linear",
       }}
     >
-      <motion.div 
+      <motion.div
         className="absolute top-0 left-0 w-1 h-full bg-gradient-to-r from-green-400 to-transparent rounded-full rotate-45"
         animate={{ opacity: [1, 0.6, 1] }}
         transition={{ duration: 2, repeat: Infinity }}
       />
-      <motion.div 
+      <motion.div
         className="absolute top-0 left-0 w-1 h-full bg-gradient-to-r from-green-400 to-transparent rounded-full -rotate-45"
         animate={{ opacity: [1, 0.6, 1] }}
         transition={{ duration: 2, repeat: Infinity }}
@@ -64,7 +62,7 @@ const Signup = () => {
           top: Math.random() * 100,
           delay: Math.random() * 10,
           duration: Math.random() * 6 + 6,
-          width: Math.random() * 7.5 + 5
+          width: Math.random() * 7.5 + 5,
         });
       }
       setStars(newStars);
@@ -73,25 +71,19 @@ const Signup = () => {
     generateStars();
   }, []);
 
-  const handleChange = (e) => {
-    console.log("Input changed:", {
-      name: e.target.name,
-      value: e.target.value,
-      currentFormData: formData,
-    });
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Individual handlers to match Login.jsx style
+  const handleFirstNameChange = (e) => setFormData((prev) => ({ ...prev, first_name: e.target.value }));
+  const handleLastNameChange = (e) => setFormData((prev) => ({ ...prev, last_name: e.target.value }));
+  const handleEmailChange = (e) => setFormData((prev) => ({ ...prev, email: e.target.value }));
+  const handlePasswordChange = (e) => setFormData((prev) => ({ ...prev, password: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    console.log("Form data before validation:", formData);
-
     if (!formData.first_name || !formData.last_name || !formData.email || !formData.password) {
       setError("All fields are required.");
-      console.log("Validation failed. Form data:", formData);
       setLoading(false);
       return;
     }
@@ -106,19 +98,15 @@ const Signup = () => {
       return;
     }
 
-    console.log("Sending data:", formData);
-
     try {
       const response = await axios.post("http://localhost:8001/auth/signup", formData, {
         headers: { "Content-Type": "application/json" },
       });
-      console.log("Signup successful:", response.data);
       localStorage.setItem("access_token", response.data.access_token);
       localStorage.setItem("refresh_token", response.data.refresh_token);
       navigate("/login");
     } catch (err) {
       const errorDetail = err.response?.data?.detail;
-      console.error("Full error response:", err.response);
       if (Array.isArray(errorDetail)) {
         setError(errorDetail.map((e) => `${e.loc.join(".")}: ${e.msg}`).join(", "));
       } else {
@@ -131,27 +119,27 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0d1d31] to-[#0c0d13] p-4 overflow-hidden relative">
-      {/* Stars container */}
-      <div className="fixed top-0 left-0 w-full h-screen -rotate-45 overflow-hidden pointer-events-none">
+      {/* Stars container - behind the form with z-0 */}
+      <div className="fixed top-0 left-0 w-full h-screen -rotate-45 overflow-hidden pointer-events-none z-0">
         {stars.map((star) => (
-          <Star 
-            key={star.id} 
-            top={star.top} 
-            delay={star.delay} 
-            duration={star.duration} 
+          <Star
+            key={star.id}
+            top={star.top}
+            delay={star.delay}
+            duration={star.duration}
             width={star.width}
           />
         ))}
       </div>
 
-      {/* Signup Card */}
-      <motion.div 
+      {/* Signup Card - above stars with z-10 */}
+      <motion.div
         className="max-w-md w-full p-8 bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/30 relative z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <motion.h2 
+        <motion.h2
           className="text-center text-2xl font-semibold mb-8 text-white"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -170,7 +158,7 @@ const Signup = () => {
           <SocialLogin />
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="relative my-8 text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -184,14 +172,14 @@ const Signup = () => {
           </div>
         </motion.div>
 
-        <motion.form 
-          className="space-y-6" 
+        <motion.form
+          className="space-y-6 relative z-20"
           onSubmit={handleSubmit}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5, duration: 0.5 }}
         >
-          <motion.div 
+          <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.4 }}
@@ -200,14 +188,13 @@ const Signup = () => {
               type="text"
               placeholder="First name"
               icon="person"
-              name="first_name"
               value={formData.first_name}
-              onChange={handleChange}
+              onChange={handleFirstNameChange}
               className="bg-gray-900/60 text-white border-gray-700"
             />
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.4 }}
@@ -216,14 +203,13 @@ const Signup = () => {
               type="text"
               placeholder="Last name"
               icon="person"
-              name="last_name"
               value={formData.last_name}
-              onChange={handleChange}
+              onChange={handleLastNameChange}
               className="bg-gray-900/60 text-white border-gray-700"
             />
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.4 }}
@@ -232,14 +218,13 @@ const Signup = () => {
               type="email"
               placeholder="Email address"
               icon="mail"
-              name="email"
               value={formData.email}
-              onChange={handleChange}
+              onChange={handleEmailChange}
               className="bg-gray-900/60 text-white border-gray-700"
             />
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.9, duration: 0.4 }}
@@ -248,15 +233,14 @@ const Signup = () => {
               type="password"
               placeholder="Password"
               icon="lock"
-              name="password"
               value={formData.password}
-              onChange={handleChange}
+              onChange={handlePasswordChange}
               className="bg-gray-900/60 text-white border-gray-700"
             />
           </motion.div>
 
           {error && (
-            <motion.p 
+            <motion.p
               className="text-red-400 text-center text-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -277,7 +261,7 @@ const Signup = () => {
           >
             {loading ? (
               <div className="flex items-center justify-center">
-                <motion.div 
+                <motion.div
                   className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
@@ -290,7 +274,7 @@ const Signup = () => {
           </motion.button>
         </motion.form>
 
-        <motion.p 
+        <motion.p
           className="mt-8 text-center text-gray-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

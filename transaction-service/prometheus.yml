@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "express_app"
+    static_configs:
+      - targets: ["http://localhost:3000"] # Points to the app service in Docker Compose

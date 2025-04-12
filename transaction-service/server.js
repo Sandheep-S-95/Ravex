@@ -3,6 +3,7 @@ import cors from "cors";
 import { MongoClient, ObjectId } from "mongodb";
 import axios from "axios";
 import dotenv from "dotenv";
+import promClient from "prom-client"; // Import prom-client
 
 dotenv.config();
 
@@ -10,6 +11,30 @@ const app = express();
 const port = process.env.PORT || 3000;
 const mongoUri = process.env.MONGO_URI;
 const authServiceUrl = process.env.AUTH_SERVICE_URL;
+
+// Enable Prometheus metrics collection
+const collectDefaultMetrics = promClient.collectDefaultMetrics;
+collectDefaultMetrics({ timeout: 5000 }); // Collect default Node.js metrics
+
+// Custom metrics
+const httpRequestDuration = new promClient.Histogram({
+  name: "http_request_duration_seconds",
+  help: "Duration of HTTP requests in seconds",
+  labelNames: ["method", "route", "status"],
+  buckets: [0.1, 0.3, 0.5, 1, 2, 5], // Define buckets for response times
+});
+
+const totalRequests = new promClient.Counter({
+  name: "http_requests_total",
+  help: "Total number of HTTP requests",
+  labelNames: ["method", "route", "status"],
+});
+
+const errorCounter = new promClient.Counter({
+  name: "http_errors_total",
+  help: "Total number of HTTP errors",
+  labelNames: ["method", "route", "status"],
+});
 
 app.use(cors({
   origin: "http://localhost:5173",
@@ -31,10 +56,23 @@ async function connectToMongo() {
 }
 connectToMongo();
 
+// Middleware to measure request duration
+app.use((req, res, next) => {
+  const end = httpRequestDuration.startTimer();
+  res.on("finish", () => {
+    const status = res.statusCode.toString();
+    end({ method: req.method, route: req.path, status });
+    totalRequests.inc({ method: req.method, route: req.path, status });
+    if (res.statusCode >= 400) {
+      errorCounter.inc({ method: req.method, route: req.path, status });
+    }
+  });
+  next();
+});
+
 // Middleware to verify token
 async function verifyToken(req, res, next) {
   const token = req.headers.authorization?.split("Bearer ")[1];
-  console.log("Token:", token);
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
   }
@@ -43,7 +81,7 @@ async function verifyToken(req, res, next) {
     const response = await axios.get(`${authServiceUrl}/auth/user`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    req.user = response.data; // { id, email, first_name, last_name }
+    req.user = response.data;
     next();
   } catch (error) {
     console.error("Token verification failed:", error.response?.data || error.message);
@@ -51,7 +89,13 @@ async function verifyToken(req, res, next) {
   }
 }
 
-// POST /api/transactions
+// Expose metrics endpoint for Prometheus
+app.get("/metrics", async (req, res) => {
+  res.set("Content-Type", promClient.register.contentType);
+  res.end(await promClient.register.metrics());
+});
+
+// Your existing routes (POST, GET, PUT) remain unchanged
 app.post("/api/transactions", verifyToken, async (req, res) => {
   const { description, amount, category, type } = req.body;
   const userId = req.user.id;
@@ -78,7 +122,6 @@ app.post("/api/transactions", verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/transactions
 app.get("/api/transactions", verifyToken, async (req, res) => {
   const userId = req.user.id;
 
@@ -93,7 +136,6 @@ app.get("/api/transactions", verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/transactions/:id
 app.get("/api/transactions/:id", verifyToken, async (req, res) => {
   const userId = req.user.id;
   const transactionId = req.params.id;
@@ -113,7 +155,6 @@ app.get("/api/transactions/:id", verifyToken, async (req, res) => {
   }
 });
 
-// PUT /api/transactions/:id
 app.put("/api/transactions/:id", verifyToken, async (req, res) => {
   const userId = req.user.id;
   const transactionId = req.params.id;
