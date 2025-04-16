@@ -1,6 +1,7 @@
 // src/components/auth_components/InputField.jsx
 import { useState } from "react";
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
+import PropTypes from "prop-types"; // Import PropTypes
 
 const InputField = ({ type, placeholder, icon, value, onChange, className }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +22,10 @@ const InputField = ({ type, placeholder, icon, value, onChange, className }) => 
   };
 
   // Extracted nested ternary into a separate statement
-  const inputType = type === "password" ? (showPassword ? "text" : "password") : type;
+  let inputType = type;
+  if (type === "password") {
+    inputType = showPassword ? "text" : "password";
+  }
 
   return (
     <div className="relative">
@@ -50,6 +54,16 @@ const InputField = ({ type, placeholder, icon, value, onChange, className }) => 
       )}
     </div>
   );
+};
+
+// Add PropTypes validation
+InputField.propTypes = {
+  icon: PropTypes.oneOf(["mail", "lock"]), // Restrict to expected icon values
+  className: PropTypes.string, // Optional additional CSS classes
+  type: PropTypes.string.isRequired, // Required input type
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired, // Value can be string or number
+  placeholder: PropTypes.string.isRequired, // Required placeholder text
+  onChange: PropTypes.func.isRequired, // Required change handler
 };
 
 export default InputField;

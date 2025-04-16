@@ -6,7 +6,17 @@ import { CryptoState } from "../CryptoContext.jsx";
 import { motion } from "framer-motion";
 
 export function numberWithCommas(x) {
-  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const str = x.toString();
+  const [integer, decimal] = str.split(".");
+  let formattedInteger = "";
+  for (let i = integer.length - 1, count = 0; i >= 0; i--) {
+    if (count > 0 && count % 3 === 0) {
+      formattedInteger = "," + formattedInteger;
+    }
+    formattedInteger = integer[i] + formattedInteger;
+    count++;
+  }
+  return decimal ? `${formattedInteger}.${decimal}` : formattedInteger;
 }
 
 export default function CoinsTable() {
@@ -45,48 +55,49 @@ export default function CoinsTable() {
   // Framer Motion variants
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.5 } }
+    visible: { opacity: 1, transition: { duration: 0.5 } },
   };
-  
+
   const tableVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { 
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
         duration: 0.6,
-        staggerChildren: 0.1
-      } 
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
-  
+
   const rowVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       x: 0,
-      transition: { duration: 0.3 }
+      transition: { duration: 0.3 },
     },
-    hover: { 
+    hover: {
       scale: 1.02,
-      boxShadow: "0 0 15px rgba(52, 211, 153, 0.5), 0 0 25px rgba(59, 130, 246, 0.3)",
+      boxShadow:
+        "0 0 15px rgba(52, 211, 153, 0.5), 0 0 25px rgba(59, 130, 246, 0.3)",
       backgroundColor: "rgba(30, 30, 30, 0.9)",
-      transition: { 
+      transition: {
         duration: 0.3,
         boxShadow: { duration: 0.4 },
-      }
-    }
+      },
+    },
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="text-center py-16 bg-black"
       initial="hidden"
       animate="visible"
       variants={containerVariants}
     >
       <div className="mx-auto max-w-7xl px-4">
-        <motion.h4 
+        <motion.h4
           className="text-5xl font-bold font-montserrat mb-8 bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-emerald-500 to-blue-400"
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,7 +105,7 @@ export default function CoinsTable() {
         >
           Cryptocurrency Prices by Market Cap
         </motion.h4>
-        
+
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -107,31 +118,36 @@ export default function CoinsTable() {
             className="w-full p-4 pl-5 pr-12 text-white bg-gray-900 bg-opacity-60 backdrop-blur-sm rounded-full border border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
             onChange={(e) => setSearch(e.target.value)}
           />
-          <svg 
-            className="w-6 h-6 absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400" 
-            fill="none" 
-            viewBox="0 0 24 24" 
+          <svg
+            className="w-6 h-6 absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
           </svg>
         </motion.div>
 
         {loading ? (
-          <motion.div 
+          <motion.div
             className="w-full h-2 bg-gradient-to-r from-green-400 via-emerald-500 to-blue-400 rounded-full"
-            animate={{ 
+            animate={{
               opacity: [0.5, 1, 0.5],
-              scaleX: [0.8, 1, 0.8]
+              scaleX: [0.8, 1, 0.8],
             }}
-            transition={{ 
+            transition={{
               repeat: Infinity,
-              duration: 1.5
+              duration: 1.5,
             }}
           ></motion.div>
         ) : (
           <>
-            <motion.div 
+            <motion.div
               className="overflow-x-auto rounded-lg shadow-lg"
               variants={tableVariants}
               initial="hidden"
@@ -140,10 +156,18 @@ export default function CoinsTable() {
               <table className="w-full text-left text-white">
                 <thead className="bg-gradient-to-r from-green-500 via-emerald-500 to-blue-500 text-white">
                   <tr>
-                    <th className="p-5 font-extrabold text-2xl font-poppins rounded-tl-lg border-r border-emerald-400">Coin</th>
-                    <th className="p-5 font-extrabold text-2xl font-poppins text-right border-r border-emerald-400">Price</th>
-                    <th className="p-5 font-extrabold text-2xl font-poppins text-right border-r border-emerald-400">24h Change</th>
-                    <th className="p-5 font-extrabold text-2xl font-poppins text-right rounded-tr-lg">Market Cap</th>
+                    <th className="p-5 font-extrabold text-2xl font-poppins rounded-tl-lg border-r border-emerald-400">
+                      Coin
+                    </th>
+                    <th className="p-5 font-extrabold text-2xl font-poppins text-right border-r border-emerald-400">
+                      Price
+                    </th>
+                    <th className="p-5 font-extrabold text-2xl font-poppins text-right border-r border-emerald-400">
+                      24h Change
+                    </th>
+                    <th className="p-5 font-extrabold text-2xl font-poppins text-right rounded-tr-lg">
+                      Market Cap
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -159,15 +183,17 @@ export default function CoinsTable() {
                         custom={index}
                       >
                         <td className="p-5 flex items-center gap-4 border-r border-gray-700">
-                          <motion.img 
-                            src={row?.image} 
-                            alt={row.name} 
+                          <motion.img
+                            src={row?.image}
+                            alt={row.name}
                             className="h-12 w-12 object-contain"
                             whileHover={{ scale: 1.2, rotate: 5 }}
                             transition={{ type: "spring", stiffness: 300 }}
                           />
                           <div className="flex flex-col">
-                            <span className="text-xl font-bold uppercase">{row.symbol}</span>
+                            <span className="text-xl font-bold uppercase">
+                              {row.symbol}
+                            </span>
                             <span className="text-gray-400">{row.name}</span>
                           </div>
                         </td>
@@ -181,12 +207,32 @@ export default function CoinsTable() {
                         >
                           <div className="flex items-center justify-end">
                             {profit ? (
-                              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 15l7-7 7 7"
+                                />
                               </svg>
                             ) : (
-                              <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              <svg
+                                className="w-4 h-4 mr-1"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
                               </svg>
                             )}
                             {Math.abs(row.price_change_percentage_24h).toFixed(2)}%
@@ -203,7 +249,7 @@ export default function CoinsTable() {
               </table>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="flex justify-center mt-8 py-5 flex-wrap gap-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -215,20 +261,30 @@ export default function CoinsTable() {
                 onClick={() => {
                   if (page > 1) {
                     setPage(page - 1);
-                    window.scrollTo({ top: 450, behavior: 'smooth' });
+                    window.scrollTo({ top: 450, behavior: "smooth" });
                   }
                 }}
                 disabled={page === 1}
                 className="px-5 py-3 mx-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-full disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
               >
                 <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <svg
+                    className="w-5 h-5 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
                   </svg>
                   Previous
                 </div>
               </motion.button>
-              
+
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                 let pageNum;
                 if (totalPages <= 5) {
@@ -247,7 +303,7 @@ export default function CoinsTable() {
                     whileTap={{ scale: 0.9 }}
                     onClick={() => {
                       setPage(pageNum);
-                      window.scrollTo({ top: 450, behavior: 'smooth' });
+                      window.scrollTo({ top: 450, behavior: "smooth" });
                     }}
                     className={`w-10 h-10 mx-1 flex items-center justify-center ${
                       page === pageNum
@@ -259,14 +315,14 @@ export default function CoinsTable() {
                   </motion.button>
                 );
               })}
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   if (page < totalPages) {
                     setPage(page + 1);
-                    window.scrollTo({ top: 450, behavior: 'smooth' });
+                    window.scrollTo({ top: 450, behavior: "smooth" });
                   }
                 }}
                 disabled={page === totalPages}
@@ -274,8 +330,18 @@ export default function CoinsTable() {
               >
                 <div className="flex items-center">
                   Next
-                  <svg className="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <svg
+                    className="w-5 h-5 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </div>
               </motion.button>

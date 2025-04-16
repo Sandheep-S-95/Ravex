@@ -1,45 +1,11 @@
-// src/UpdatePassword.jsx
-import { useState, useEffect } from "react";
+// src/pages/auth_pages/UpdatePassword.jsx
+import { useState, useEffect } from "react"; // Keeping useEffect for token handling
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import InputField from "../../components/auth_components/InputField";
-
-// Create a Star component with Framer Motion
-const Star = ({ delay, duration, top, width }) => {
-  return (
-    <motion.div
-      className="absolute h-0.5 bg-gradient-to-r from-green-400 to-transparent rounded-full opacity-70"
-      style={{ 
-        top: `${top}vh`,
-        width: `${width}em`,
-        filter: "drop-shadow(0 0 2px #4ade80)"
-      }}
-      initial={{ x: "100vw" }}
-      animate={{ 
-        x: "-30vw",
-      }}
-      transition={{
-        duration: duration,
-        delay: delay,
-        repeat: Infinity,
-        repeatType: "loop",
-        ease: "linear"
-      }}
-    >
-      <motion.div 
-        className="absolute top-0 left-0 w-1 h-full bg-gradient-to-r from-green-400 to-transparent rounded-full rotate-45"
-        animate={{ opacity: [1, 0.6, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
-      <motion.div 
-        className="absolute top-0 left-0 w-1 h-full bg-gradient-to-r from-green-400 to-transparent rounded-full -rotate-45"
-        animate={{ opacity: [1, 0.6, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      />
-    </motion.div>
-  );
-};
+import StarBackground from "../../components/auth_components/StarBackground";
+import AuthCard from "../../components/auth_components/AuthCard";
 
 const UpdatePassword = () => {
   const [password, setPassword] = useState("");
@@ -48,28 +14,8 @@ const UpdatePassword = () => {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(null);
-  const [stars, setStars] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-
-  // Generate stars on component mount
-  useEffect(() => {
-    const generateStars = () => {
-      const newStars = [];
-      for (let i = 0; i < 50; i++) {
-        newStars.push({
-          id: i,
-          top: Math.random() * 100,
-          delay: Math.random() * 10,
-          duration: Math.random() * 6 + 6,
-          width: Math.random() * 7.5 + 5
-        });
-      }
-      setStars(newStars);
-    };
-
-    generateStars();
-  }, []);
 
   useEffect(() => {
     const hashParams = new URLSearchParams(location.hash.substring(1));
@@ -123,39 +69,10 @@ const UpdatePassword = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#0d1d31] to-[#0c0d13] p-4 overflow-hidden relative">
-      {/* Stars container */}
-      <div className="fixed top-0 left-0 w-full h-screen -rotate-45 overflow-hidden pointer-events-none">
-        {stars.map((star) => (
-          <Star 
-            key={star.id} 
-            top={star.top} 
-            delay={star.delay} 
-            duration={star.duration} 
-            width={star.width}
-          />
-        ))}
-      </div>
-
-      {/* Update Password Card */}
-      <motion.div 
-        className="max-w-md w-full p-8 bg-black/30 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/30 relative z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <motion.h2 
-          className="text-center text-2xl font-semibold mb-8 text-white"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-emerald-500 to-blue-400">
-            Set New Password
-          </span>
-        </motion.h2>
-
+      <StarBackground />
+      <AuthCard title="Set New Password">
         {error && (
-          <motion.div 
+          <motion.div
             className="bg-red-500/20 text-red-400 p-3 mb-6 rounded-lg border border-red-500/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -164,9 +81,8 @@ const UpdatePassword = () => {
             {error}
           </motion.div>
         )}
-
         {success ? (
-          <motion.div 
+          <motion.div
             className="bg-green-500/20 text-green-400 p-3 mb-6 rounded-lg border border-green-500/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -175,22 +91,23 @@ const UpdatePassword = () => {
             Password updated successfully. Redirecting to login...
           </motion.div>
         ) : (
-          <motion.form 
-            onSubmit={handlePasswordUpdate} 
+          <motion.form
+            onSubmit={handlePasswordUpdate}
             className="space-y-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <motion.div 
+            <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.4 }}
             >
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="new-password" className="block text-sm font-medium text-gray-300 mb-1">
                 New Password
               </label>
               <InputField
+                id="new-password"
                 type="password"
                 placeholder="New Password"
                 icon="lock"
@@ -199,16 +116,16 @@ const UpdatePassword = () => {
                 className="bg-gray-900/60 text-white border-gray-700"
               />
             </motion.div>
-
-            <motion.div 
+            <motion.div
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.4 }}
             >
-              <label className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300 mb-1">
                 Confirm New Password
               </label>
               <InputField
+                id="confirm-password"
                 type="password"
                 placeholder="Confirm New Password"
                 icon="lock"
@@ -217,7 +134,6 @@ const UpdatePassword = () => {
                 className="bg-gray-900/60 text-white border-gray-700"
               />
             </motion.div>
-
             <motion.button
               type="submit"
               className="w-full py-3 bg-gradient-to-r from-green-500 via-emerald-500 to-blue-500 text-white font-medium rounded-full hover:shadow-lg hover:shadow-emerald-500/20 transition duration-300 disabled:opacity-50"
@@ -230,7 +146,7 @@ const UpdatePassword = () => {
             >
               {loading ? (
                 <div className="flex items-center justify-center">
-                  <motion.div 
+                  <motion.div
                     className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                     animate={{ rotate: 360 }}
                     transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
@@ -243,7 +159,7 @@ const UpdatePassword = () => {
             </motion.button>
           </motion.form>
         )}
-      </motion.div>
+      </AuthCard>
     </div>
   );
 };

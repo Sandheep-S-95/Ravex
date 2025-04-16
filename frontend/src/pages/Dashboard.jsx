@@ -18,6 +18,7 @@ import {
   LinearScale,
   Filler,
 } from "chart.js";
+import PropTypes from "prop-types"; // Import PropTypes
 
 // Register ChartJS components
 ChartJS.register(
@@ -47,7 +48,7 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const Dashboard = () => {
+const Dashboard = ({ children }) => { // Add children as an optional prop
   const { user } = useAuth();
   const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
@@ -137,7 +138,10 @@ const Dashboard = () => {
     ],
   };
 
-  const dates = [...new Set(transactions.map(t => t.created_at?.split("T")[0] || "Unknown"))].sort();
+  const dates = [...new Set(transactions.map(t => t.created_at?.split("T")[0] || "Unknown"))].sort((a, b) => {
+    // Add compare function for chronological sorting
+    return new Date(a) - new Date(b);
+  });
   const lineData = {
     labels: dates,
     datasets: [{
@@ -316,9 +320,15 @@ const Dashboard = () => {
             </motion.div>
           </div>
         )}
+        {children} {/* Render children if provided */}
       </div>
     </div>
   );
+};
+
+// Add PropTypes validation
+Dashboard.propTypes = {
+  children: PropTypes.node, // Optional children prop
 };
 
 export default Dashboard;

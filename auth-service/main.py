@@ -36,6 +36,9 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
+# Constants
+BEARER_TOKEN_PREFIX = "Bearer "
+
 # Data models
 class UserSignUp(BaseModel):
     email: EmailStr
@@ -50,7 +53,7 @@ class UserSignUp(BaseModel):
             raise ValueError('Password must contain at least one uppercase letter')
         if not re.search(r'[a-z]', v):
             raise ValueError('Password must contain at least one lowercase letter')
-        if not re.search(r'[0-9]', v):
+        if not re.search(r'\d', v):  # Changed [0-9] to \d
             raise ValueError('Password must contain at least one number')
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
             raise ValueError('Password must contain at least one special character')
@@ -78,7 +81,7 @@ class ResetPasswordRequest(BaseModel):
 # Dependency for authenticated routes
 async def get_current_user(authorization: str = Header(...)):
     try:
-        token = authorization.split("Bearer ")[1] if "Bearer " in authorization else authorization
+        token = authorization.split(BEARER_TOKEN_PREFIX)[1] if BEARER_TOKEN_PREFIX in authorization else authorization
         user_response = supabase.auth.get_user(token)
         if not user_response.user:
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
@@ -131,7 +134,7 @@ async def login(user: UserLogin):
 @app.post("/auth/logout")
 async def logout(authorization: str = Header(...), current_user=Depends(get_current_user)):
     try:
-        token = authorization.split("Bearer ")[1] if "Bearer " in authorization else authorization
+        token = authorization.split(BEARER_TOKEN_PREFIX)[1] if BEARER_TOKEN_PREFIX in authorization else authorization
         supabase.auth.set_session(token)
         supabase.auth.sign_out()
         return {"message": "Successfully logged out"}

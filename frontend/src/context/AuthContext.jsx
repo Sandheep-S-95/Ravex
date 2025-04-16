@@ -1,19 +1,17 @@
-// src/context/AuthContext.jsx
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import PropTypes from "prop-types";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
     const accessToken = localStorage.getItem("access_token");
-    console.log("Fetching user with token:", accessToken);
     if (!accessToken) {
       setUser(null);
       setLoading(false);
-      console.log("No token found, user set to null");
       return;
     }
 
@@ -27,11 +25,10 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch user: " + response.statusText);
+        throw new Error(`Failed to fetch user: ${response.statusText}`);
       }
 
       const userData = await response.json();
-      console.log("User data fetched:", userData);
       setUser(userData);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -66,17 +63,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({ user, loading, fetchUser, logout }),
+    [user, loading] // Dependencies: only re-compute when user or loading changes
+  );
+
   return (
-    <AuthContext.Provider value={{ user, loading, fetchUser, logout }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
+
+export default AuthProvider;
+export { useAuth };

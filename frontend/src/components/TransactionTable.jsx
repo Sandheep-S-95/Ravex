@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import PropTypes from "prop-types"; // Import PropTypes
 
 const categoryColors = {
   BTC: "#F7931A", // Bitcoin Orange
@@ -99,6 +100,20 @@ const TransactionTable = ({ transactions }) => {
       </div>
     </div>
   );
+};
+
+// Add PropTypes validation
+TransactionTable.propTypes = {
+  transactions: PropTypes.arrayOf(
+    PropTypes.shape({
+      _id: PropTypes.string.isRequired, // Unique identifier
+      created_at: PropTypes.oneOfType([PropTypes.string, PropTypes.instanceOf(Date)]).isRequired, // Date or string
+      description: PropTypes.string.isRequired, // Transaction description
+      category: PropTypes.string.isRequired, // Category (e.g., BTC, ETH)
+      amount: PropTypes.number.isRequired, // Transaction amount
+      type: PropTypes.oneOf(["Sell", "Buy"]).isRequired, // Transaction type
+    })
+  ).isRequired, // Ensure transactions prop is provided
 };
 
 export default TransactionTable;

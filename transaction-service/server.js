@@ -3,25 +3,33 @@ import cors from "cors";
 import { MongoClient, ObjectId } from "mongodb";
 import axios from "axios";
 import dotenv from "dotenv";
-import promClient from "prom-client"; // Import prom-client
+import promClient from "prom-client";
 
 dotenv.config();
 
 const app = express();
+// Disable X-Powered-By header to prevent version disclosure
+app.disable("x-powered-by");
+
 const port = process.env.PORT || 3000;
 const mongoUri = process.env.MONGO_URI;
 const authServiceUrl = process.env.AUTH_SERVICE_URL;
 
+// Validate environment variables
+if (!mongoUri || !authServiceUrl) {
+  console.error("Missing required environment variables: MONGO_URI and AUTH_SERVICE_URL");
+  process.exit(1);
+}
+
 // Enable Prometheus metrics collection
 const collectDefaultMetrics = promClient.collectDefaultMetrics;
-collectDefaultMetrics({ timeout: 5000 }); // Collect default Node.js metrics
+collectDefaultMetrics({ timeout: 5000 });
 
-// Custom metrics
 const httpRequestDuration = new promClient.Histogram({
   name: "http_request_duration_seconds",
   help: "Duration of HTTP requests in seconds",
   labelNames: ["method", "route", "status"],
-  buckets: [0.1, 0.3, 0.5, 1, 2, 5], // Define buckets for response times
+  buckets: [0.1, 0.3, 0.5, 1, 2, 5],
 });
 
 const totalRequests = new promClient.Counter({
@@ -36,10 +44,12 @@ const errorCounter = new promClient.Counter({
   labelNames: ["method", "route", "status"],
 });
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // MongoDB Connection
@@ -95,7 +105,7 @@ app.get("/metrics", async (req, res) => {
   res.end(await promClient.register.metrics());
 });
 
-// Your existing routes (POST, GET, PUT) remain unchanged
+// POST /api/transactions
 app.post("/api/transactions", verifyToken, async (req, res) => {
   const { description, amount, category, type } = req.body;
   const userId = req.user.id;
@@ -122,6 +132,7 @@ app.post("/api/transactions", verifyToken, async (req, res) => {
   }
 });
 
+// GET /api/transactions
 app.get("/api/transactions", verifyToken, async (req, res) => {
   const userId = req.user.id;
 
@@ -136,11 +147,17 @@ app.get("/api/transactions", verifyToken, async (req, res) => {
   }
 });
 
+// GET /api/transactions/:id
 app.get("/api/transactions/:id", verifyToken, async (req, res) => {
   const userId = req.user.id;
   const transactionId = req.params.id;
 
   try {
+    // Validate transactionId as a valid ObjectId string
+    if (!ObjectId.isValid(transactionId)) {
+      return res.status(400).json({ error: "Invalid transaction ID" });
+    }
+
     const transaction = await db.collection("transactions").findOne({
       _id: new ObjectId(transactionId),
       user_id: userId,
@@ -155,9 +172,10 @@ app.get("/api/transactions/:id", verifyToken, async (req, res) => {
   }
 });
 
+// PUT /api/transactions/:id
 app.put("/api/transactions/:id", verifyToken, async (req, res) => {
   const userId = req.user.id;
-  const transactionId = req.params.id;
+  const transactionId = req.id;
   const { description, amount, category, type } = req.body;
 
   if (!description || !amount || !category || !type) {
@@ -165,6 +183,11 @@ app.put("/api/transactions/:id", verifyToken, async (req, res) => {
   }
 
   try {
+    // Validate transactionId as a valid ObjectId string
+    if (!ObjectId.isValid(transactionId)) {
+      return res.status(400).json({ error: "Invalid transaction ID" });
+    }
+
     const result = await db.collection("transactions").updateOne(
       { _id: new ObjectId(transactionId), user_id: userId },
       { $set: { description, amount, category, type, updated_at: new Date().toISOString() } }

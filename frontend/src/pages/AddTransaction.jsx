@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Switch from "../components/Switch";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
-
 import Navbar from "../components/user_components/Navbar";
 
 const AddTransaction = () => {
@@ -86,12 +85,10 @@ const AddTransaction = () => {
         await axios.put(`http://localhost:3000/api/transactions/${editId}`, transaction, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Transaction updated successfully");
       } else {
         await axios.post("http://localhost:3000/api/transactions", transaction, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Transaction saved successfully");
       }
       navigate("/transactions");
     } catch (error) {
@@ -107,17 +104,27 @@ const AddTransaction = () => {
     return null;
   }
 
+  // Extract submit button text logic
+  const getSubmitButtonText = () => {
+    if (loading) return "Saving...";
+    if (editId) return "Update";
+    return "Submit";
+  };
+
   return (
     <div>
-      <Navbar/>
+      <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-6">
         <h1 className="text-3xl font-bold text-purple-700 font-montserrat mb-6">
           {editId ? "Edit Transaction" : "Add Transaction"}
         </h1>
         <form onSubmit={handleSubmit} className="space-y-6 bg-gray-900 p-6 rounded-lg text-white">
           <div className="space-y-2">
-            <label className="text-sm font-medium font-montserrat">Description</label>
+            <label htmlFor="description" className="text-sm font-medium font-montserrat">
+              Description
+            </label>
             <input
+              id="description"
               type="text"
               name="description"
               value={formData.description}
@@ -131,8 +138,11 @@ const AddTransaction = () => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium font-montserrat">Amount</label>
+            <label htmlFor="amount" className="text-sm font-medium font-montserrat">
+              Amount
+            </label>
             <input
+              id="amount"
               type="number"
               name="amount"
               value={formData.amount}
@@ -141,14 +151,15 @@ const AddTransaction = () => {
               step="0.01"
               className="w-full p-3 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
-            {errors.amount && (
-              <p className="text-sm text-red-500">{errors.amount}</p>
-            )}
+            {errors.amount && <p className="text-sm text-red-500">{errors.amount}</p>}
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium font-montserrat">Category</label>
+            <label htmlFor="category" className="text-sm font-medium font-montserrat">
+              Category
+            </label>
             <select
+              id="category"
               name="category"
               value={formData.category}
               onChange={handleInputChange}
@@ -169,17 +180,13 @@ const AddTransaction = () => {
           <div className="flex items-center gap-4">
             <Switch onToggle={handleSwitchToggle} />
             <span
-              className={`text-lg font-montserrat ${
-                isBuy ? "text-green-500" : "text-red-500"
-              }`}
+              className={`text-lg font-montserrat ${isBuy ? "text-green-500" : "text-red-500"}`}
             >
               {isBuy ? "Sell" : "Buy"}
             </span>
           </div>
 
-          {errors.submit && (
-            <p className="text-sm text-red-500">{errors.submit}</p>
-          )}
+          {errors.submit && <p className="text-sm text-red-500">{errors.submit}</p>}
 
           <div className="flex gap-4">
             <button
@@ -195,7 +202,7 @@ const AddTransaction = () => {
               className="w-full bg-purple-700 text-white py-2 rounded-lg font-montserrat hover:bg-purple-600 transition-colors"
               disabled={loading}
             >
-              {loading ? "Saving..." : editId ? "Update" : "Submit"}
+              {getSubmitButtonText()}
             </button>
           </div>
         </form>

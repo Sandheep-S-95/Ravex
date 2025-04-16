@@ -1,6 +1,6 @@
-// src/components/LiveChart.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import ReactApexChart from "react-apexcharts";
+import PropTypes from "prop-types"; // Import PropTypes
 
 const API_KEY = "YWKNZCCT3TT4K4I3"; // Your API key
 
@@ -39,7 +39,7 @@ const LiveChart = ({ symbol }) => {
       );
     }
     // Move sort operation to a separate statement
-    const sortedData = formattedData.sort((a, b) => new Date(a.x) - new Date(b.x));
+    const sortedData = [...formattedData].sort((a, b) => new Date(a.x) - new Date(b.x));
     return sortedData.slice(-13); // Adjust this number to zoom in/out (e.g., -5 for ~1 month)
   };
 
@@ -117,6 +117,11 @@ const LiveChart = ({ symbol }) => {
       width="100%"
     />
   );
+};
+
+// Add PropTypes validation
+LiveChart.propTypes = {
+  symbol: PropTypes.string.isRequired, // Validate symbol as a required string
 };
 
 export default LiveChart;

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom"; // Import Link
 import { CryptoState } from "../CryptoContext";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
@@ -51,9 +51,11 @@ function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-center pt-6">
       <div className="container mx-auto px-8">
         <div className="backdrop-blur-md bg-gray-900/80 rounded-full py-3 px-8 flex items-center justify-between shadow-xl ring-1 ring-gray-800/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5">
-          <div 
-            className="flex items-center cursor-pointer" 
-            onClick={() => navigate("/")}
+          {/* Replace div with Link for navigation */}
+          <Link
+            to="/"
+            className="flex items-center cursor-pointer"
+            aria-label="Go to home page" // Accessibility label
           >
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-teal-400 to-teal-500 flex items-center justify-center shadow-md">
               <span className="text-gray-900 text-xs font-bold">R</span>
@@ -61,8 +63,8 @@ function Header() {
             <h1 className="ml-2 text-xl font-bold text-teal-400 font-montserrat transition-colors duration-300 hover:text-yellow-500">
               RAVEX
             </h1>
-          </div>
-          
+          </Link>
+
           <div className="flex items-center gap-4">
             <select
               value={currency}
@@ -72,7 +74,7 @@ function Header() {
               <option value="USD" className="bg-gray-800">USD</option>
               <option value="INR" className="bg-gray-800">INR</option>
             </select>
-            
+
             {user ? (
               <>
                 <button

@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 import os
 from mistralai import Mistral
@@ -11,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', os.urandom(24))  # Add a secret key
+csrf = CSRFProtect(app)  # Initialize CSRF protection
+CORS(app, origins=["http://localhost:5173"], supports_credentials=True)
 
 # Load environment variables
 load_dotenv()
@@ -26,7 +29,9 @@ def home():
     logger.debug("Received request to home endpoint")
     return jsonify({'message': 'Welcome to the Stock Analysis API'})
 
+# For API endpoints that need to be exempt from CSRF
 @app.route('/api/analyze-stock', methods=['POST'])
+@csrf.exempt  # Only exempt this specific endpoint if necessary
 def analyze_stock():
     logger.debug("Received POST request to /api/analyze-stock")
     try:
@@ -59,4 +64,4 @@ def analyze_stock():
 
 if __name__ == '__main__':
     logger.info("Starting Flask app...")
-    app.run(debug=True, host='0.0.0.0', port=8080)  # Changed from 6000 to 5000
+    app.run(debug=False, host='0.0.0.0', port=8080)
